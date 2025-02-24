@@ -54,3 +54,7 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+#firebase
+tehnotransport-7630b-firebase-adminsdk-fbsvc-dc961e67c4.json
+firebase.json
