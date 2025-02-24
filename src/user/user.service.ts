@@ -12,9 +12,18 @@ export class UserService {
         email: registerUser.email,
         password: registerUser.password,
       });
-      return userRecord;
+      const emailVerificationLink = await firebaseAdmin
+        .auth()
+        .generateEmailVerificationLink(registerUser.email);
+      console.log('Email Verification Link:', emailVerificationLink);
+      return {
+        message: 'User registered successfully. Verification email sent.',
+        user: userRecord,
+        emailVerificationLink,
+      };
     } catch (error) {
-      throw new Error('User registration failed');
+      console.error('Firebase Error:', error);
+      throw new Error(`User registration failed: ${error.message}`);
     }
   }
 

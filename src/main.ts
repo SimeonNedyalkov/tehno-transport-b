@@ -10,7 +10,7 @@ async function bootstrap() {
     fs.readFileSync(firebaseKeyFilePath).toString(),
   );
   const app = await NestFactory.create(AppModule);
-  if (firebaseAdmin.app.length === 0) {
+  if (firebaseAdmin.apps.length === 0) {
     console.log('Inititalise Firebase Application');
     firebaseAdmin.initializeApp({
       credential: firebaseAdmin.credential.cert(firebaseServiceAccount),
