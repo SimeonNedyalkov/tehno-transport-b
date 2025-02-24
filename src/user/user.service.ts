@@ -72,7 +72,42 @@ export class UserService {
       );
     }
   }
+  async validateRequest(req): Promise<boolean> {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+      console.log('Authorization header not provided.');
+      return false;
+    }
+    const [bearer, token] = authHeader.split(' ');
+    if (bearer !== 'Bearer' || !token) {
+      console.log('Invalid authorization format. Expected "Bearer <token>".');
+      return false;
+    }
+    try {
+      const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
+      console.log('Decoded Token:', decodedToken);
+      return true;
+    } catch (error) {
+      if (error.code === 'auth/id-token-expired') {
+        console.error('Token has expired.');
+      } else if (error.code === 'auth/invalid-id-token') {
+        console.error('Invalid ID token provided.');
+      } else {
+        console.error('Error verifying token:', error);
+      }
+      return false;
+    }
+  }
 
+  async logoutUser(authHeader: string) {
+    try {
+      const token = authHeader.replace('Bearer ', '');
+      await firebaseAdmin.auth().verifyIdToken(token);
+      return { message: 'Logged out successfully' };
+    } catch (error) {
+      console.error('Error logging out:', error.message);
+    }
+  }
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }

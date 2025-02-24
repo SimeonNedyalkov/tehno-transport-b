@@ -8,12 +8,17 @@ import {
   Delete,
   UsePipes,
   ValidationPipe,
+  UseGuards,
+  HttpException,
+  HttpStatus,
+  Headers,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginDto } from './dto/login-user.dto';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -30,12 +35,26 @@ export class UserController {
     return this.userService.loginUser(loginUserDto);
   }
 
+  @Post('logout')
+  async logoutUser(@Headers('authorization') authHeader: string) {
+    try {
+      const response = await this.userService.logoutUser(authHeader);
+      return response;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to logout user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Get()
+  @UseGuards(AuthGuard)
   findAll() {
     return this.userService.findAll();
   }
