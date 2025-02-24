@@ -2,8 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as firebaseAdmin from 'firebase-admin';
 import * as fs from 'fs';
+import * as dotenv from 'dotenv';
 
 async function bootstrap() {
+  dotenv.config();
   const firebaseKeyFilePath =
     './tehnotransport-7630b-firebase-adminsdk-fbsvc-dc961e67c4.json';
   const firebaseServiceAccount = JSON.parse(

@@ -3,6 +3,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import * as firebaseAdmin from 'firebase-admin';
+import { LoginDto } from './dto/login-user.dto';
+import axios from 'axios';
 
 @Injectable()
 export class UserService {
@@ -24,6 +26,50 @@ export class UserService {
     } catch (error) {
       console.error('Firebase Error:', error);
       throw new Error(`User registration failed: ${error.message}`);
+    }
+  }
+
+  async loginUser(payload: LoginDto) {
+    const { email, password } = payload;
+    try {
+      const { idToken, refreshToken, expiresIn } =
+        await this.signInWithEmailAndPassword(email, password);
+      return { idToken, refreshToken, expiresIn };
+    } catch (error: any) {
+      if (error.message.includes('EMAIL_NOT_FOUND')) {
+        throw new Error('User not found');
+      } else if (error.message.includes('INVALID_PASSWORD')) {
+        throw new Error('Invalid password');
+      } else {
+        throw new Error(error.message);
+      }
+    }
+  }
+  private async signInWithEmailAndPassword(email: string, password: string) {
+    console.log(process.env.APIKEY);
+    const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.APIKEY}`;
+    return await this.sendPostRequest(url, {
+      email,
+      password,
+      returnSecureToken: true,
+    });
+  }
+
+  private async sendPostRequest(url: string, data: any) {
+    try {
+      const response = await axios.post(url, data, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        'Firebase Authentication Error:',
+        error.response?.data || error.message,
+      );
+      throw new Error(
+        error.response?.data?.error?.message ||
+          'Firebase Authentication request failed',
+      );
     }
   }
 
