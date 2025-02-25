@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { db } from 'src/firebaseConfig/firebase';
@@ -39,11 +43,14 @@ export class CustomersService {
       throw new NotFoundException(`Customer with ID ${id} not found`);
     }
 
-    const updateData = JSON.parse(JSON.stringify(updateCustomerDto));
-
-    await customerRef.update(updateData);
-    const updatedCustomer = await customerRef.get();
-    return { id: updatedCustomer.id, ...updatedCustomer.data() };
+    try {
+      const updateData = JSON.parse(JSON.stringify(updateCustomerDto));
+      await customerRef.update(updateData);
+      const updatedCustomer = await customerRef.get();
+      return { id: updatedCustomer.id, ...updatedCustomer.data() };
+    } catch (error) {
+      throw new UnauthorizedException('Error updating customer');
+    }
   }
 
   // Delete a customer
