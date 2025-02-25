@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { db } from 'src/firebaseConfig/firebase';
 
 @Injectable()
 export class CustomersService {
-  create(createCustomerDto: CreateCustomerDto) {
-    return 'This action adds a new customer';
+  async create(createCustomerDto: CreateCustomerDto) {
+    return;
   }
 
-  findAll() {
-    return `This action returns all customers`;
+  async findAll() {
+    const usersSnapshot = await db.collection('customers').get();
+    return usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   }
 
   findOne(id: number) {
