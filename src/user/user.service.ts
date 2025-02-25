@@ -8,6 +8,9 @@ import axios from 'axios';
 
 @Injectable()
 export class UserService {
+  validateToken(authHeader: string) {
+    throw new Error('Method not implemented.');
+  }
   async registerUser(registerUser: RegisterUserDto) {
     try {
       const userRecord = await firebaseAdmin.auth().createUser({
@@ -99,15 +102,29 @@ export class UserService {
     }
   }
 
-  async logoutUser(authHeader: string) {
+  async logoutUser(refreshToken: string) {
     try {
-      const token = authHeader.replace('Bearer ', '');
-      await firebaseAdmin.auth().verifyIdToken(token);
+      const refreshTokenUrl = `https://securetoken.googleapis.com/v1/token?key=${process.env.APIKEY}`;
+
+      // Exchange refresh token for user info
+      const response = await axios.post(refreshTokenUrl, {
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+      });
+
+      const uid = response.data.user_id;
+
+      // Revoke the refresh tokens for this UID
+      await firebaseAdmin.auth().revokeRefreshTokens(uid);
+      console.log(`Refresh token revoked for UID: ${uid}`);
+
       return { message: 'Logged out successfully' };
     } catch (error) {
       console.error('Error logging out:', error.message);
+      throw new Error('Error logging out: ' + error.message);
     }
   }
+
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }

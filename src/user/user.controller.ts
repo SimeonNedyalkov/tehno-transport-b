@@ -9,8 +9,6 @@ import {
   UsePipes,
   ValidationPipe,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Headers,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -41,10 +39,7 @@ export class UserController {
       const response = await this.userService.logoutUser(authHeader);
       return response;
     } catch (error) {
-      throw new HttpException(
-        'Failed to logout user',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new Error('Failed to logout user');
     }
   }
 
