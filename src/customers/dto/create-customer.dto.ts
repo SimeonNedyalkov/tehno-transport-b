@@ -11,4 +11,6 @@ export class CreateCustomerDto {
 
   @IsDate()
   dateOfTehnoTest: Date;
+  daysRemaining: string;
+  status: string;
 }
