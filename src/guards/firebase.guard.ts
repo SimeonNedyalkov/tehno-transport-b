@@ -10,13 +10,16 @@ import * as firebaseAdmin from 'firebase-admin';
 export class FirebaseAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Missing or invalid token');
+    let token = request.cookies?.authToken;
+
+    if (!token) {
+      const authHeader = request.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        throw new UnauthorizedException('Missing or invalid token');
+      }
+      token = authHeader.split(' ')[1];
     }
-
-    const token = authHeader.split(' ')[1];
 
     try {
       const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);

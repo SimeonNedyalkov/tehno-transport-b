@@ -49,7 +49,6 @@ export class UserService {
     }
   }
   private async signInWithEmailAndPassword(email: string, password: string) {
-    console.log(process.env.APIKEY);
     const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.APIKEY}`;
     return await this.sendPostRequest(url, {
       email,
