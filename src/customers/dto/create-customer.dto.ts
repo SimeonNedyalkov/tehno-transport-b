@@ -1,4 +1,5 @@
 import { IsDate } from 'class-validator';
+import { Timestamp } from 'firebase/firestore';
 
 export class CreateCustomerDto {
   brand: string;
@@ -7,10 +8,10 @@ export class CreateCustomerDto {
   phone: number;
   regNumber: string;
 
-  createdAt: Date;
+  createdAt?: Date | Timestamp;
 
   @IsDate()
   dateOfTehnoTest: Date;
-  daysRemaining: string;
-  status: string;
+  daysRemaining?: string;
+  status?: string;
 }
