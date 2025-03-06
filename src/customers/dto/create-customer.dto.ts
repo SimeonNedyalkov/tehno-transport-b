@@ -11,7 +11,7 @@ export class CreateCustomerDto {
   createdAt?: Date | Timestamp;
 
   @IsDate()
-  dateOfTehnoTest: Date;
+  dateOfTehnoTest: Date | Timestamp;
   daysRemaining?: string;
   status?: string;
 }
