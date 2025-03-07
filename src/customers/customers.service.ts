@@ -52,7 +52,7 @@ export class CustomersService {
 
     // Return the new customer data along with the generated id and ensure it includes the fields
     return {
-      id: newCustomer.id,
+      id: customerRef.id,
       brand: customerData?.brand,
       firstName: customerData?.firstName,
       model: customerData?.model,
@@ -113,5 +113,49 @@ export class CustomersService {
 
     await customerRef.delete();
     return { message: `Customer with ID ${id} deleted successfully` };
+  }
+  async updateOrCreate(id: string, updateCustomerDto: UpdateCustomerDto) {
+    const customerRef = db.collection('customers').doc(id);
+    const customerDoc = await customerRef.get();
+
+    if (customerDoc.exists) {
+      // If the customer exists, update it
+      const updateData = JSON.parse(JSON.stringify(updateCustomerDto));
+      await customerRef.update(updateData);
+      const updatedCustomer = await customerRef.get();
+      return { id: updatedCustomer.id, ...updatedCustomer.data() };
+    } else {
+      // If the customer does not exist, create it
+      const createdAt = new Date(); // Current timestamp
+
+      // Handle the date conversion of `dateOfTehnoTest`
+      const today = dayjs();
+      const testDate =
+        updateCustomerDto.dateOfTehnoTest instanceof Timestamp
+          ? dayjs(updateCustomerDto.dateOfTehnoTest.toDate())
+          : dayjs(updateCustomerDto.dateOfTehnoTest);
+
+      const daysRemaining = testDate.diff(today, 'days');
+
+      let status = 'Upcoming';
+      if (daysRemaining < 0) {
+        status = 'Overdue';
+      } else if (daysRemaining <= 7) {
+        status = 'Due Soon';
+      }
+
+      // Create new customer data
+      const newCustomerData = {
+        ...updateCustomerDto,
+        createdAt,
+        daysRemaining,
+        status,
+      };
+
+      // Save in Firestore
+      await customerRef.set(newCustomerData);
+
+      return { id: customerRef.id, ...newCustomerData };
+    }
   }
 }
