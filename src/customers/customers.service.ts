@@ -13,32 +13,59 @@ import * as dayjs from 'dayjs';
 export class CustomersService {
   // Create a new customer
   async create(createCustomerDto: CreateCustomerDto) {
-    const today = dayjs();
-    const createdAt = new Date(); // Create `createdAt` field as current date
+    const createdAt = new Date(); // Current timestamp
 
-    // Handle the date conversion of `dateOfTehnoTest`
-    const testDate =
-      createCustomerDto.dateOfTehnoTest instanceof Timestamp
-        ? dayjs(createCustomerDto.dateOfTehnoTest.toDate())
-        : dayjs(createCustomerDto.dateOfTehnoTest);
+    let testDate: Date;
+    if (createCustomerDto.dateOfTehnoTest instanceof Timestamp) {
+      // If it's a Firebase Timestamp
+      testDate = createCustomerDto.dateOfTehnoTest.toDate();
+    } else if (createCustomerDto.dateOfTehnoTest instanceof Date) {
+      // If it's already a Date object
+      testDate = createCustomerDto.dateOfTehnoTest;
+    } else {
+      // If it's an object with seconds and nanoseconds (common in Firestore documents)
+      testDate = new Date(createCustomerDto.dateOfTehnoTest.seconds * 1000);
+    }
+    const lastTehnoDate = testDate.toISOString().split('T')[0];
 
-    // Calculate the remaining days
-    const daysRemaining = testDate.diff(today, 'days');
+    // Add one year to the test date
+    testDate.setFullYear(testDate.getFullYear() + 1);
+    const nextTehnoDate = testDate.toISOString().split('T')[0];
+
+    // Get today's date
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+
+    const todaysDate = yyyy + '-' + mm + '-' + dd;
+
+    // Convert dates to Date objects
+    const nextTehnoDateObj: any = new Date(nextTehnoDate);
+    const todayObj: any = new Date(today);
+
+    // Calculate the difference in milliseconds
+    const timeDiff = nextTehnoDateObj - todayObj;
+
+    // Convert milliseconds to days
+    const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
     // Determine status based on daysRemaining
     let status = 'Upcoming';
-    if (daysRemaining < 0) {
+    if (isNaN(daysRemaining)) {
+      status = 'Invalid Date';
+    } else if (daysRemaining < 0) {
       status = 'Overdue';
     } else if (daysRemaining <= 7) {
       status = 'Due Soon';
     }
 
-    // Add `createdAt`, `daysRemaining`, and `status` fields
+    // Construct the customer object with additional fields
     const customerWithStatus = {
       ...createCustomerDto,
-      createdAt, // Add `createdAt` as current date
-      daysRemaining, // Add the calculated days remaining
-      status, // Add status based on the days remaining
+      createdAt,
+      daysRemaining,
+      status,
     };
 
     // Add the customer to Firestore
@@ -46,11 +73,10 @@ export class CustomersService {
       .collection('customers')
       .add(customerWithStatus);
 
-    // Ensure that the newly added customer includes all the necessary fields by retrieving it again
+    // Retrieve the newly added customer
     const newCustomer = await customerRef.get();
     const customerData = newCustomer.data();
 
-    // Return the new customer data along with the generated id and ensure it includes the fields
     return {
       id: customerRef.id,
       brand: customerData?.brand,
