@@ -14,7 +14,7 @@ export class UpdateCustomerDto extends PartialType(CreateCustomerDto) {
   createdAt: Date | Timestamp;
 
   @IsDate()
-  dateOfTehnoTest: Date | Timestamp;
+  dateOfTehnoTest: Date | Timestamp | { seconds: number; nanoseconds: number };
   daysRemaining: string;
   status: string;
 }

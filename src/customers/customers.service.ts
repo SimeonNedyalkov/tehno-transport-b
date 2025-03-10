@@ -158,16 +158,46 @@ export class CustomersService {
       const createdAt = new Date(); // Current timestamp
 
       // Handle the date conversion of `dateOfTehnoTest`
-      const today = dayjs();
-      const testDate =
-        updateCustomerDto.dateOfTehnoTest instanceof Timestamp
-          ? dayjs(updateCustomerDto.dateOfTehnoTest.toDate())
-          : dayjs(updateCustomerDto.dateOfTehnoTest);
+      let testDate: Date;
+      if (updateCustomerDto.dateOfTehnoTest instanceof Timestamp) {
+        // If it's a Firebase Timestamp
+        testDate = updateCustomerDto.dateOfTehnoTest.toDate();
+      } else if (updateCustomerDto.dateOfTehnoTest instanceof Date) {
+        // If it's already a Date object
+        testDate = updateCustomerDto.dateOfTehnoTest;
+      } else {
+        // If it's an object with seconds and nanoseconds (common in Firestore documents)
+        testDate = new Date(updateCustomerDto.dateOfTehnoTest.seconds * 1000);
+      }
+      const lastTehnoDate = testDate.toISOString().split('T')[0];
 
-      const daysRemaining = testDate.diff(today, 'days');
+      // Add one year to the test date
+      testDate.setFullYear(testDate.getFullYear() + 1);
+      const nextTehnoDate = testDate.toISOString().split('T')[0];
 
+      // Get today's date
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const yyyy = today.getFullYear();
+
+      const todaysDate = yyyy + '-' + mm + '-' + dd;
+
+      // Convert dates to Date objects
+      const nextTehnoDateObj: any = new Date(nextTehnoDate);
+      const todayObj: any = new Date(today);
+
+      // Calculate the difference in milliseconds
+      const timeDiff = nextTehnoDateObj - todayObj;
+
+      // Convert milliseconds to days
+      const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+      // Determine status based on daysRemaining
       let status = 'Upcoming';
-      if (daysRemaining < 0) {
+      if (isNaN(daysRemaining)) {
+        status = 'Invalid Date';
+      } else if (daysRemaining < 0) {
         status = 'Overdue';
       } else if (daysRemaining <= 7) {
         status = 'Due Soon';
