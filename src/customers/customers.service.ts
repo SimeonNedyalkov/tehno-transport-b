@@ -94,7 +94,10 @@ export class CustomersService {
   // Get all customers
   async findAll() {
     const usersSnapshot = await db.collection('customers').get();
-    return usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return usersSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
   }
 
   // Get a single customer by ID
