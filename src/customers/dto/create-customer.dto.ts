@@ -13,6 +13,6 @@ export class CreateCustomerDto {
 
   @IsDate()
   dateOfTehnoTest: Date | Timestamp | { seconds: number; nanoseconds: number };
-  daysRemaining?: string;
+  daysRemaining?: number;
   status?: string;
 }
