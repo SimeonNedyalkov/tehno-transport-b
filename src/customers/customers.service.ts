@@ -9,12 +9,13 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { db } from 'src/firebaseConfig/firebase';
 import { Timestamp } from 'firebase/firestore';
 
-const calculateDaysRemaining = (testDate: Date) => {
-  const lastTehnoDate = testDate.toISOString().split('T')[0];
+const calculateDaysRemaining = (testDate: Timestamp) => {
+  // const lastTehnoDate = testDate.toISOString().split('T')[0];
 
   // Add one year to the test date
-  testDate.setFullYear(testDate.getFullYear() + 1);
-  const nextTehnoDate = testDate.toISOString().split('T')[0];
+  const newTestDate = new Date(testDate.seconds * 1000);
+  newTestDate.setFullYear(newTestDate.getFullYear() + 1);
+  const nextTehnoDate = newTestDate.toISOString().split('T')[0];
 
   // Get today's date
   const today = new Date();
@@ -37,15 +38,21 @@ const calculateDaysRemaining = (testDate: Date) => {
 };
 
 const getStatus = (daysRemaining: number) => {
-  let status = 'Upcoming';
   if (isNaN(daysRemaining)) {
-    status = 'Invalid Date';
-  } else if (daysRemaining < 0) {
-    status = 'Overdue';
+    return 'Invalid Date';
+  } else if (daysRemaining < 0 && daysRemaining >= -30) {
+    return 'Overdue';
+  } else if (daysRemaining < -30) {
+    return 'Expired';
   } else if (daysRemaining <= 7) {
-    status = 'Due Soon';
+    return 'Due Soon';
+  } else if (daysRemaining <= 14) {
+    return 'Upcoming';
+  } else if (daysRemaining <= 365) {
+    return 'Valid';
+  } else {
+    return 'Expired';
   }
-  return status;
 };
 
 @Injectable()
@@ -88,7 +95,8 @@ export class CustomersService {
 
     // // Convert milliseconds to days
     // const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    const daysRemaining = calculateDaysRemaining(testDate);
+    const timestamp = Timestamp.fromDate(testDate);
+    const daysRemaining = calculateDaysRemaining(timestamp);
     // Determine status based on daysRemaining
     let status = getStatus(daysRemaining);
 
@@ -168,8 +176,8 @@ export class CustomersService {
     } else {
       throw new UnauthorizedException('Invalid dateOfTehnoTest format');
     }
-
-    const newDaysRemaining = calculateDaysRemaining(testDate);
+    const timestamp = Timestamp.fromDate(testDate);
+    const newDaysRemaining = calculateDaysRemaining(timestamp);
     const newStatus = getStatus(newDaysRemaining);
 
     // If the date conversion or status calculation failed, return an error
