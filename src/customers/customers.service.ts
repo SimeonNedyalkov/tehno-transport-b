@@ -9,51 +9,51 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { db } from 'src/firebaseConfig/firebase';
 import { Timestamp } from 'firebase/firestore';
 
-const calculateDaysRemaining = (testDate: Timestamp) => {
-  // const lastTehnoDate = testDate.toISOString().split('T')[0];
+// const calculateDaysRemaining = (testDate: Timestamp) => {
+//   // const lastTehnoDate = testDate.toISOString().split('T')[0];
 
-  // Add one year to the test date
-  const newTestDate = new Date(testDate.seconds * 1000);
-  newTestDate.setFullYear(newTestDate.getFullYear() + 1);
-  const nextTehnoDate = newTestDate.toISOString().split('T')[0];
+//   // Add one year to the test date
+//   const newTestDate = new Date(testDate.seconds * 1000);
+//   newTestDate.setFullYear(newTestDate.getFullYear() + 1);
+//   const nextTehnoDate = newTestDate.toISOString().split('T')[0];
 
-  // Get today's date
-  const today = new Date();
-  const dd = String(today.getDate()).padStart(2, '0');
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const yyyy = today.getFullYear();
+//   // Get today's date
+//   const today = new Date();
+//   const dd = String(today.getDate()).padStart(2, '0');
+//   const mm = String(today.getMonth() + 1).padStart(2, '0');
+//   const yyyy = today.getFullYear();
 
-  const todaysDate = yyyy + '-' + mm + '-' + dd;
+//   const todaysDate = yyyy + '-' + mm + '-' + dd;
 
-  // Convert dates to Date objects
-  const nextTehnoDateObj: any = new Date(nextTehnoDate);
-  const todayObj: any = new Date(today);
+//   // Convert dates to Date objects
+//   const nextTehnoDateObj: any = new Date(nextTehnoDate);
+//   const todayObj: any = new Date(today);
 
-  // Calculate the difference in milliseconds
-  const timeDiff = nextTehnoDateObj - todayObj;
+//   // Calculate the difference in milliseconds
+//   const timeDiff = nextTehnoDateObj - todayObj;
 
-  // Convert milliseconds to days
-  const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  return daysRemaining;
-};
+//   // Convert milliseconds to days
+//   const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+//   return daysRemaining;
+// };
 
-const getStatus = (daysRemaining: number) => {
-  if (isNaN(daysRemaining)) {
-    return 'Invalid Date';
-  } else if (daysRemaining < 0 && daysRemaining >= -30) {
-    return 'Overdue';
-  } else if (daysRemaining < -30) {
-    return 'Expired';
-  } else if (daysRemaining <= 7) {
-    return 'Due Soon';
-  } else if (daysRemaining <= 14) {
-    return 'Upcoming';
-  } else if (daysRemaining <= 365) {
-    return 'Valid';
-  } else {
-    return 'Expired';
-  }
-};
+// const getStatus = (daysRemaining: number) => {
+//   if (isNaN(daysRemaining)) {
+//     return 'Invalid Date';
+//   } else if (daysRemaining < 0 && daysRemaining >= -30) {
+//     return 'Overdue';
+//   } else if (daysRemaining < -30) {
+//     return 'Expired';
+//   } else if (daysRemaining <= 7) {
+//     return 'Due Soon';
+//   } else if (daysRemaining <= 14) {
+//     return 'Upcoming';
+//   } else if (daysRemaining <= 365) {
+//     return 'Valid';
+//   } else {
+//     return 'Expired';
+//   }
+// };
 
 @Injectable()
 export class CustomersService {
@@ -61,17 +61,17 @@ export class CustomersService {
   async create(createCustomerDto: CreateCustomerDto) {
     const createdAt = new Date(); // Current timestamp
 
-    let testDate: Date;
-    if (createCustomerDto.dateOfTehnoTest instanceof Timestamp) {
-      // If it's a Firebase Timestamp
-      testDate = createCustomerDto.dateOfTehnoTest.toDate();
-    } else if (createCustomerDto.dateOfTehnoTest instanceof Date) {
-      // If it's already a Date object
-      testDate = createCustomerDto.dateOfTehnoTest;
-    } else {
-      // If it's an object with seconds and nanoseconds (common in Firestore documents)
-      testDate = new Date(createCustomerDto.dateOfTehnoTest.seconds * 1000);
-    }
+    // let testDate: Date;
+    // if (createCustomerDto.dateOfTehnoTest instanceof Timestamp) {
+    //   // If it's a Firebase Timestamp
+    //   testDate = createCustomerDto.dateOfTehnoTest.toDate();
+    // } else if (createCustomerDto.dateOfTehnoTest instanceof Date) {
+    //   // If it's already a Date object
+    //   testDate = createCustomerDto.dateOfTehnoTest;
+    // } else {
+    //   // If it's an object with seconds and nanoseconds (common in Firestore documents)
+    //   testDate = new Date(createCustomerDto.dateOfTehnoTest.seconds * 1000);
+    // }
     // const lastTehnoDate = testDate.toISOString().split('T')[0];
 
     // // Add one year to the test date
@@ -95,17 +95,17 @@ export class CustomersService {
 
     // // Convert milliseconds to days
     // const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    const timestamp = Timestamp.fromDate(testDate);
-    const daysRemaining = calculateDaysRemaining(timestamp);
-    // Determine status based on daysRemaining
-    let status = getStatus(daysRemaining);
+    // const timestamp = Timestamp.fromDate(testDate);
+    // const daysRemaining = calculateDaysRemaining(timestamp);
+    // // Determine status based on daysRemaining
+    // let status = getStatus(daysRemaining);
 
     // Construct the customer object with additional fields
     const customerWithStatus = {
       ...createCustomerDto,
       createdAt,
-      daysRemaining,
-      status,
+      // daysRemaining,
+      // status,
     };
 
     // Add the customer to Firestore
@@ -126,8 +126,8 @@ export class CustomersService {
       regNumber: customerData?.regNumber,
       dateOfTehnoTest: customerData?.dateOfTehnoTest,
       createdAt: customerData?.createdAt,
-      daysRemaining: customerData?.daysRemaining,
-      status: customerData?.status,
+      // daysRemaining: customerData?.daysRemaining,
+      // status: customerData?.status,
     };
   }
 
@@ -163,27 +163,27 @@ export class CustomersService {
     }
 
     // Centralize date conversion logic
-    let testDate: Date;
-    if (updateCustomerDto.dateOfTehnoTest instanceof Timestamp) {
-      testDate = updateCustomerDto.dateOfTehnoTest.toDate();
-    } else if (updateCustomerDto.dateOfTehnoTest instanceof Date) {
-      testDate = updateCustomerDto.dateOfTehnoTest;
-    } else if (
-      updateCustomerDto.dateOfTehnoTest &&
-      updateCustomerDto.dateOfTehnoTest.seconds
-    ) {
-      testDate = new Date(updateCustomerDto.dateOfTehnoTest.seconds * 1000);
-    } else {
-      throw new UnauthorizedException('Invalid dateOfTehnoTest format');
-    }
-    const timestamp = Timestamp.fromDate(testDate);
-    const newDaysRemaining = calculateDaysRemaining(timestamp);
-    const newStatus = getStatus(newDaysRemaining);
+    // let testDate: Date;
+    // if (updateCustomerDto.dateOfTehnoTest instanceof Timestamp) {
+    //   testDate = updateCustomerDto.dateOfTehnoTest.toDate();
+    // } else if (updateCustomerDto.dateOfTehnoTest instanceof Date) {
+    //   testDate = updateCustomerDto.dateOfTehnoTest;
+    // } else if (
+    //   updateCustomerDto.dateOfTehnoTest &&
+    //   updateCustomerDto.dateOfTehnoTest.seconds
+    // ) {
+    //   testDate = new Date(updateCustomerDto.dateOfTehnoTest.seconds * 1000);
+    // } else {
+    //   throw new UnauthorizedException('Invalid dateOfTehnoTest format');
+    // }
+    // const timestamp = Timestamp.fromDate(testDate);
+    // const newDaysRemaining = calculateDaysRemaining(timestamp);
+    // const newStatus = getStatus(newDaysRemaining);
 
     // If the date conversion or status calculation failed, return an error
-    if (newStatus === 'Invalid Date') {
-      throw new UnauthorizedException('Invalid dateOfTehnoTest');
-    }
+    // if (newStatus === 'Invalid Date') {
+    //   throw new UnauthorizedException('Invalid dateOfTehnoTest');
+    // }
 
     // Try updating the customer
     try {
@@ -195,8 +195,8 @@ export class CustomersService {
       // Update the customer in Firestore with the correct fields
       await customerRef.update({
         ...restOfUpdateDto,
-        status: newStatus,
-        daysRemaining: newDaysRemaining, // Correct field name here
+        // status: newStatus,
+        // daysRemaining: newDaysRemaining, // Correct field name here
       });
 
       // Return the updated customer data
