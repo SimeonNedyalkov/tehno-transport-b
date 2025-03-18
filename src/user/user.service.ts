@@ -101,6 +101,35 @@ export class UserService {
     }
   }
 
+  async refreshAuthToken(refreshToken: string) {
+    try {
+      const {
+        id_token: idToken,
+        refresh_token: newRefreshToken,
+        expires_in: expiresIn,
+      } = await this.sendRefreshAuthTokenRequest(refreshToken);
+      return {
+        idToken,
+        refreshToken: newRefreshToken,
+        expiresIn,
+      };
+    } catch (error: any) {
+      if (error.message.includes('INVALID_REFRESH_TOKEN')) {
+        throw new Error(`Invalid refresh token: ${refreshToken}.`);
+      } else {
+        throw new Error('Failed to refresh token');
+      }
+    }
+  }
+  private async sendRefreshAuthTokenRequest(refreshToken: string) {
+    const url = `https://securetoken.googleapis.com/v1/token?key=${process.env.APIKEY}`;
+    const payload = {
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+    };
+    return await this.sendPostRequest(url, payload);
+  }
+
   async logoutUser(refreshToken: string) {
     try {
       const refreshTokenUrl = `https://securetoken.googleapis.com/v1/token?key=${process.env.APIKEY}`;
@@ -115,6 +144,7 @@ export class UserService {
 
       // Revoke the refresh tokens for this UID
       await firebaseAdmin.auth().revokeRefreshTokens(uid);
+
       console.log(`Refresh token revoked for UID: ${uid}`);
 
       return { message: 'Logged out successfully' };

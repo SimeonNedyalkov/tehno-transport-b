@@ -11,6 +11,8 @@ import {
   UseGuards,
   Headers,
   Res,
+  Query,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -18,7 +20,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginDto } from './dto/login-user.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { Response } from 'express';
+import { Response, Request } from 'express';
+import { refreshToken } from 'firebase-admin/app';
 
 @Controller('user')
 export class UserController {
@@ -40,8 +43,40 @@ export class UserController {
       secure: process.env.NODE_ENV === 'production', // Only send over HTTPS
       sameSite: 'lax',
     });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true, // Prevent XSS
+      secure: process.env.NODE_ENV === 'production', // Only send over HTTPS
+      sameSite: 'lax',
+    });
 
-    return res.json({ message: 'Login successful', refreshToken });
+    return res.json({ message: 'Login successful', refreshToken, idToken });
+  }
+  @Post('refresh-auth')
+  async refreshAuth(@Req() req: Request, @Res() res: Response) {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'Refresh token missing' });
+    }
+
+    try {
+      const result = await this.userService.refreshAuthToken(refreshToken);
+      res.cookie('authToken', result.idToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      res.cookie('refreshToken', result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      return res.json(result);
+    } catch (error) {
+      console.error('Error during token refresh:', error);
+      return res
+        .status(500)
+        .json({ error: 'Failed to refresh token', details: error.message });
+    }
   }
 
   @Post('logout')
