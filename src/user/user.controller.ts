@@ -80,12 +80,34 @@ export class UserController {
   }
 
   @Post('logout')
-  async logoutUser(@Headers('authorization') authHeader: string) {
+  async logoutUser(@Req() req: Request, @Res() res: Response) {
     try {
-      const response = await this.userService.logoutUser(authHeader);
-      return response;
+      const refreshToken = req.cookies.refreshToken; // Get refresh token from cookies
+      if (!refreshToken) {
+        return res.status(400).json({ message: 'No refresh token provided' });
+      }
+
+      await this.userService.logoutUser(refreshToken);
+
+      // Clear auth cookies
+      res.clearCookie('authToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      });
+
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      });
+
+      return res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
-      throw new Error('Failed to logout user');
+      console.error('Firebase Error:', error.response?.data || error.message);
+      return res
+        .status(500)
+        .json({ error: 'Authentication failed', details: error.message });
     }
   }
 

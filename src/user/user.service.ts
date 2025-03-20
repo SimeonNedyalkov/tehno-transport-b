@@ -5,6 +5,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import * as firebaseAdmin from 'firebase-admin';
 import { LoginDto } from './dto/login-user.dto';
 import axios from 'axios';
+import { signOut } from 'firebase/auth';
 
 @Injectable()
 export class UserService {
