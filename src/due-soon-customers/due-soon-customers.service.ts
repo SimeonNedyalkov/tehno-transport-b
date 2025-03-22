@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateDueSoonCustomerDto } from './dto/create-due-soon-customer.dto';
 import { UpdateDueSoonCustomerDto } from './dto/update-due-soon-customer.dto';
 import { db } from 'src/firebaseConfig/firebase';
+import { merge } from 'rxjs';
 @Injectable()
 export class DueSoonCustomersService {
   async create(createDueSoonCustomerDto: CreateDueSoonCustomerDto) {
@@ -9,7 +10,7 @@ export class DueSoonCustomersService {
       const customerRef = await db.collection('dueSoonCustomers');
 
       const customerDoc = customerRef.doc(createDueSoonCustomerDto.id);
-      await customerDoc.set(createDueSoonCustomerDto);
+      await customerDoc.set(createDueSoonCustomerDto), { merge: true };
 
       return { message: 'Due soon customer added successfully' };
     } catch (error) {
