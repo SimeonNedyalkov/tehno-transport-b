@@ -10,12 +10,16 @@ import {
   ValidationPipe,
   Res,
   Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginDto } from './dto/login-user.dto';
 import { Response, Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Controller('user')
 export class UserController {
@@ -116,9 +120,21 @@ export class UserController {
     return await this.userService.findUser(authToken);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @Patch('updateUser')
+  @UseInterceptors(
+    FileInterceptor('photoURL', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          callback(null, `${Date.now()}-${file.originalname}`);
+        },
+      }),
+    }),
+  )
+  updateUser(@Req() req: Request, @UploadedFile() file: Express.Multer.File) {
+    const authToken = req.cookies.authToken;
+    const body = req.body;
+    return this.userService.updateUser(authToken, body, file);
   }
 
   @Delete(':id')

@@ -6,8 +6,9 @@ import * as firebaseAdmin from 'firebase-admin';
 import { LoginDto } from './dto/login-user.dto';
 import axios from 'axios';
 import { signOut } from 'firebase/auth';
-import { getAuth } from 'firebase/auth';
-
+import { getAuth, updateProfile } from 'firebase/auth';
+import * as path from 'path';
+import * as fs from 'fs';
 @Injectable()
 export class UserService {
   validateToken(authHeader: string) {
@@ -186,8 +187,37 @@ export class UserService {
     }
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateUser(authToken: string, body: any, file: Express.Multer.File) {
+    if (!authToken) {
+      throw new Error('Authorization token not provided.');
+    }
+
+    const { email, displayName } = body;
+    console.log(file); // Log file to check if it's coming as expected
+
+    try {
+      // Verify the token and get the user ID
+      const decodedToken = await firebaseAdmin.auth().verifyIdToken(authToken);
+      const uid = decodedToken.uid;
+
+      // Prepare user update object
+      const updates: any = {};
+      if (email) updates.email = email;
+      if (displayName) updates.displayName = displayName;
+
+      // Handle File Upload (Save locally or to Firebase Storage)
+      if (file && file.filename) {
+        updates.photoURL = `http://localhost:3000/uploads/${file.filename}`; // This is the local URL for the file
+      }
+
+      // Update user in Firebase Auth (Admin SDK)
+      await firebaseAdmin.auth().updateUser(uid, updates);
+
+      return { message: 'Profile updated successfully', updates };
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw new Error('Profile update failed.');
+    }
   }
 
   remove(id: number) {
