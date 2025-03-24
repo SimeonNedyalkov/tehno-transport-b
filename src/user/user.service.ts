@@ -6,6 +6,7 @@ import * as firebaseAdmin from 'firebase-admin';
 import { LoginDto } from './dto/login-user.dto';
 import axios from 'axios';
 import { signOut } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 
 @Injectable()
 export class UserService {
@@ -155,16 +156,34 @@ export class UserService {
     }
   }
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
-
   findAll() {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findUser(authToken: string): Promise<any> {
+    if (!authToken) {
+      throw new Error('Authorization token not provided.');
+    }
+
+    try {
+      // Verify the ID token using Firebase Admin SDK
+      const decodedToken = await firebaseAdmin.auth().verifyIdToken(authToken);
+
+      // Fetch the user from Firebase using the UID from the decoded token
+      const user = await firebaseAdmin.auth().getUser(decodedToken.uid);
+
+      // Return the user details
+      return {
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        emailVerified: user.emailVerified,
+      };
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      throw new Error('Invalid or expired token.');
+    }
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

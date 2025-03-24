@@ -8,20 +8,14 @@ import {
   Delete,
   UsePipes,
   ValidationPipe,
-  UseGuards,
-  Headers,
   Res,
-  Query,
   Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginDto } from './dto/login-user.dto';
-import { AuthGuard } from 'src/guards/auth.guard';
 import { Response, Request } from 'express';
-import { refreshToken } from 'firebase-admin/app';
 
 @Controller('user')
 export class UserController {
@@ -111,20 +105,15 @@ export class UserController {
     }
   }
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
+  // @Post()
+  // create(@Body() createUserDto: CreateUserDto) {
+  //   return this.userService.create(createUserDto);
+  // }
 
-  @Get()
-  @UseGuards(AuthGuard)
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Get('getUser')
+  async findUser(@Req() req: Request): Promise<any> {
+    const authToken = req.cookies.authToken;
+    return await this.userService.findUser(authToken);
   }
 
   @Patch(':id')
