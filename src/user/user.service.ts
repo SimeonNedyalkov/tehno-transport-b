@@ -6,9 +6,10 @@ import * as firebaseAdmin from 'firebase-admin';
 import { LoginDto } from './dto/login-user.dto';
 import axios from 'axios';
 import { signOut } from 'firebase/auth';
-import { getAuth, updateProfile } from 'firebase/auth';
+import { getAuth, updateProfile, updatePassword } from 'firebase/auth';
 import * as path from 'path';
 import * as fs from 'fs';
+import { error } from 'console';
 @Injectable()
 export class UserService {
   validateToken(authHeader: string) {
@@ -220,6 +221,38 @@ export class UserService {
     }
   }
 
+  async updatePassword(authToken: string, body: any) {
+    if (!authToken) {
+      throw new Error('Authorization token not provided.');
+    }
+
+    const { newPassword } = body;
+    const decodedToken = await firebaseAdmin.auth().verifyIdToken(authToken);
+    const uid = decodedToken.uid;
+    try {
+      await firebaseAdmin.auth().updateUser(uid, {
+        password: newPassword,
+      });
+      return { message: 'Password updated successfully' };
+    } catch (error) {
+      console.error('Error updating password:', error);
+      throw new Error('Password update failed.');
+    }
+  }
+
+  async sendPasswordResetEmail(email: string) {
+    try {
+      const resetLink = await firebaseAdmin
+        .auth()
+        .generatePasswordResetLink(email);
+      console.log('Password Reset Link:', resetLink);
+
+      return { message: 'Password reset email sent successfully' };
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+      throw new Error('Failed to send password reset email.');
+    }
+  }
   remove(id: number) {
     return `This action removes a #${id} user`;
   }

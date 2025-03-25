@@ -137,6 +137,13 @@ export class UserController {
     return this.userService.updateUser(authToken, body, file);
   }
 
+  @Patch('updatePassword')
+  updatePassword(@Req() req: Request) {
+    const authToken = req.cookies.authToken;
+    const body = req.body;
+    return this.userService.updatePassword(authToken, body);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
