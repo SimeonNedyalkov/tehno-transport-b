@@ -1,15 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import * as firebaseAdmin from 'firebase-admin';
 import { LoginDto } from './dto/login-user.dto';
 import axios from 'axios';
-import { signOut } from 'firebase/auth';
-import { getAuth, updateProfile, updatePassword } from 'firebase/auth';
-import * as path from 'path';
-import * as fs from 'fs';
-import { error } from 'console';
+import * as nodemailer from 'nodemailer';
+
 @Injectable()
 export class UserService {
   validateToken(authHeader: string) {
@@ -246,13 +241,38 @@ export class UserService {
         .auth()
         .generatePasswordResetLink(email);
       console.log('Password Reset Link:', resetLink);
-
-      return { message: 'Password reset email sent successfully' };
+      this.sendEmailToUser(email, resetLink);
+      return { message: 'Password reset email sent successfully:', resetLink };
     } catch (error) {
       console.error('Error sending password reset email:', error);
       throw new Error('Failed to send password reset email.');
     }
   }
+  async sendEmailToUser(email: string, resetLink: string) {
+    let transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.APP_PASSWORD,
+      },
+    });
+
+    let mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset Request',
+      text: `Click the following link to reset your password: ${resetLink}`,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log('Password reset email sent');
+    } catch (error) {
+      console.error('Error sending email:', error);
+      throw new Error('Failed to send email');
+    }
+  }
+
   remove(id: number) {
     return `This action removes a #${id} user`;
   }

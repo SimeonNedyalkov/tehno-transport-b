@@ -108,6 +108,22 @@ export class UserController {
         .json({ error: 'Authentication failed', details: error.message });
     }
   }
+  @Post('sendPasswordReset')
+  async sendPasswordReset(@Body('email') email: string, @Res() res: Response) {
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+    try {
+      console.log(email);
+      const result = await this.userService.sendPasswordResetEmail(email);
+      return res.json(result);
+    } catch (error) {
+      return res.status(500).json({
+        error: 'Failed to send password reset email',
+        details: error.message,
+      });
+    }
+  }
 
   // @Post()
   // create(@Body() createUserDto: CreateUserDto) {
