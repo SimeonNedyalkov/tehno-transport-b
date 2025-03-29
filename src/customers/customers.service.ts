@@ -13,7 +13,6 @@ export class CustomersService {
   // Create a new customer
   async create(createCustomerDto: CreateCustomerDto) {
     const createdAt = new Date();
-    console.log(typeof createCustomerDto.dateOfTehnoTest);
 
     let formattedDateOfTehnoTest: Timestamp;
 
@@ -57,10 +56,7 @@ export class CustomersService {
       phone: customerData?.phone,
       regNumber: customerData?.regNumber,
       dateOfTehnoTest: customerData?.dateOfTehnoTest,
-      createdAt: new Timestamp(
-        customerData?.createdAt._seconds,
-        customerData?.createdAt._nanoseconds,
-      ),
+      createdAt: customerData?.createdAt,
       // daysRemaining: customerData?.daysRemaining,
       // status: customerData?.status,
     };
@@ -101,9 +97,52 @@ export class CustomersService {
     try {
       const updateData = JSON.parse(JSON.stringify(updateCustomerDto));
       const { status, daysRemaining, ...restOfUpdateDto } = updateData;
+      console.log(restOfUpdateDto?.dateOfTehnoTest);
+      let formattedDateOfTehnoTest: Timestamp;
+      if (
+        updateCustomerDto.dateOfTehnoTest &&
+        typeof updateCustomerDto.dateOfTehnoTest === 'object' &&
+        'seconds' in updateCustomerDto.dateOfTehnoTest
+      ) {
+        formattedDateOfTehnoTest = new Timestamp(
+          updateCustomerDto.dateOfTehnoTest.seconds,
+          updateCustomerDto.dateOfTehnoTest.nanoseconds,
+        );
+      } else if (updateCustomerDto.dateOfTehnoTest instanceof Date) {
+        formattedDateOfTehnoTest = Timestamp.fromDate(
+          updateCustomerDto.dateOfTehnoTest,
+        );
+      } else {
+        throw new Error('Invalid dateOfTehnoTest format');
+      }
+      const convertToTimestamp = (input: any): Timestamp | null => {
+        if (!input) return null;
 
+        if (input instanceof Timestamp) {
+          return input; // Already a Firestore Timestamp
+        }
+
+        if (input instanceof Date) {
+          return Timestamp.fromDate(input); // Convert Date to Firestore Timestamp
+        }
+
+        if (typeof input === 'object') {
+          const seconds = input.seconds ?? input._seconds; // Handle both cases
+          const nanoseconds = input.nanoseconds ?? input._nanoseconds;
+
+          if (typeof seconds === 'number' && typeof nanoseconds === 'number') {
+            return new Timestamp(seconds, nanoseconds);
+          }
+        }
+
+        return null; // Invalid format
+      };
+      let formattedCreatedAt: Timestamp | null = null;
+      formattedCreatedAt = convertToTimestamp(updateCustomerDto.createdAt);
       await customerRef.update({
         ...restOfUpdateDto,
+        dateOfTehnoTest: formattedDateOfTehnoTest,
+        createdAt: formattedCreatedAt,
         // status: newStatus,
         // daysRemaining: newDaysRemaining, // Correct field name here
       });
@@ -116,6 +155,28 @@ export class CustomersService {
       throw new InternalServerErrorException('Error updating customer');
     }
   }
+  convertToTimestamp = (input: any): Timestamp | null => {
+    if (!input) return null;
+
+    if (input instanceof Timestamp) {
+      return input; // Already a Firestore Timestamp
+    }
+
+    if (input instanceof Date) {
+      return Timestamp.fromDate(input); // Convert Date to Firestore Timestamp
+    }
+
+    if (typeof input === 'object') {
+      const seconds = input.seconds ?? input._seconds; // Handle both cases
+      const nanoseconds = input.nanoseconds ?? input._nanoseconds;
+
+      if (typeof seconds === 'number' && typeof nanoseconds === 'number') {
+        return new Timestamp(seconds, nanoseconds);
+      }
+    }
+
+    return null; // Invalid format
+  };
 
   // Delete a customer
   async remove(id: string) {

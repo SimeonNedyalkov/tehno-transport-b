@@ -9,7 +9,7 @@ export class CreateDueSoonCustomerDto {
   phone: number;
   regNumber: string;
 
-  createdAt?: Date | Timestamp;
+  createdAt?: Timestamp;
 
   @IsDate()
   dateOfTehnoTest: Date | Timestamp | { seconds: number; nanoseconds: number };
