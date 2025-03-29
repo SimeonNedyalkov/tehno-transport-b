@@ -6,15 +6,38 @@ import {
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { db } from 'src/firebaseConfig/firebase';
+import { Timestamp } from 'firebase-admin/firestore';
 
 @Injectable()
 export class CustomersService {
   // Create a new customer
   async create(createCustomerDto: CreateCustomerDto) {
     const createdAt = new Date();
+    console.log(typeof createCustomerDto.dateOfTehnoTest);
+
+    let formattedDateOfTehnoTest: Timestamp;
+
+    if (
+      createCustomerDto.dateOfTehnoTest &&
+      typeof createCustomerDto.dateOfTehnoTest === 'object' &&
+      'seconds' in createCustomerDto.dateOfTehnoTest
+    ) {
+      formattedDateOfTehnoTest = new Timestamp(
+        createCustomerDto.dateOfTehnoTest.seconds,
+        createCustomerDto.dateOfTehnoTest.nanoseconds,
+      );
+    } else if (createCustomerDto.dateOfTehnoTest instanceof Date) {
+      formattedDateOfTehnoTest = Timestamp.fromDate(
+        createCustomerDto.dateOfTehnoTest,
+      );
+    } else {
+      throw new Error('Invalid dateOfTehnoTest format');
+    }
+
     const customerWithStatus = {
       ...createCustomerDto,
       createdAt,
+      dateOfTehnoTest: formattedDateOfTehnoTest,
     };
 
     // Add the customer to Firestore
@@ -34,7 +57,10 @@ export class CustomersService {
       phone: customerData?.phone,
       regNumber: customerData?.regNumber,
       dateOfTehnoTest: customerData?.dateOfTehnoTest,
-      createdAt: customerData?.createdAt,
+      createdAt: new Timestamp(
+        customerData?.createdAt._seconds,
+        customerData?.createdAt._nanoseconds,
+      ),
       // daysRemaining: customerData?.daysRemaining,
       // status: customerData?.status,
     };
