@@ -29,6 +29,9 @@ export class CustomersService {
       formattedDateOfTehnoTest = Timestamp.fromDate(
         createCustomerDto.dateOfTehnoTest,
       );
+    } else if (typeof createCustomerDto.dateOfTehnoTest === 'string') {
+      const newDate = new Date(createCustomerDto.dateOfTehnoTest);
+      formattedDateOfTehnoTest = Timestamp.fromDate(newDate);
     } else {
       throw new Error('Invalid dateOfTehnoTest format');
     }
