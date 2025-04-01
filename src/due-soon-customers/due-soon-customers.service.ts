@@ -47,15 +47,26 @@ export class DueSoonCustomersService {
     return `This action updates a #${id} dueSoonCustomer`;
   }
 
-  async remove(id: string) {
+  async remove() {
     try {
-      const customerRef = await db.collection('dueSoonCustomers').doc(id);
+      // Instead of deleting a single document, delete the entire collection
+      await this.deleteCollection('dueSoonCustomers');
 
-      await customerRef.delete();
-      return { message: 'Due soon customer removed successfully' };
+      return { message: 'Due soon customer collection deleted successfully' };
     } catch (error) {
-      console.error(`Error deleting due soon customer with ID ${id}:`, error);
-      throw new Error(`Failed to delete due soon customer with ID ${id}`);
+      console.error(`Error deleting due soon customer collection:`, error);
+      throw new Error(`Failed to delete due soon customer collection`);
     }
+  }
+
+  // Helper function to delete a collection
+  private async deleteCollection(collectionPath: string) {
+    const collectionRef = db.collection(collectionPath);
+    const snapshot = await collectionRef.get();
+
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+
+    await batch.commit();
   }
 }

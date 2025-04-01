@@ -46,9 +46,9 @@ export class DueSoonCustomersController {
     return this.dueSoonCustomersService.update(+id, updateDueSoonCustomerDto);
   }
 
-  @Delete(':id')
+  @Delete('')
   @UseGuards(FirebaseAuthGuard)
   remove(@Param('id') id: string) {
-    return this.dueSoonCustomersService.remove(id);
+    return this.dueSoonCustomersService.remove();
   }
 }
