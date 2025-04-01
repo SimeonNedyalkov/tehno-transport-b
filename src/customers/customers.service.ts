@@ -102,6 +102,7 @@ export class CustomersService {
       const { status, daysRemaining, ...restOfUpdateDto } = updateData;
       console.log(restOfUpdateDto?.dateOfTehnoTest);
       let formattedDateOfTehnoTest: Timestamp;
+
       if (
         updateCustomerDto.dateOfTehnoTest &&
         typeof updateCustomerDto.dateOfTehnoTest === 'object' &&
@@ -115,6 +116,9 @@ export class CustomersService {
         formattedDateOfTehnoTest = Timestamp.fromDate(
           updateCustomerDto.dateOfTehnoTest,
         );
+      } else if (typeof updateCustomerDto.dateOfTehnoTest === 'string') {
+        const newDate = new Date(updateCustomerDto.dateOfTehnoTest);
+        formattedDateOfTehnoTest = Timestamp.fromDate(newDate);
       } else {
         throw new Error('Invalid dateOfTehnoTest format');
       }
