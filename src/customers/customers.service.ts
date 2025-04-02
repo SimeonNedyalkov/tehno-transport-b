@@ -39,7 +39,6 @@ export class CustomersService {
           .setFullYear(formattedDateOfLastTehnoTest.toDate().getFullYear() + 1),
       ),
     );
-    console.log(nextTehnoTestTimestamp);
     const customerWithStatus = {
       ...createCustomerDto,
       createdAt,
@@ -64,7 +63,9 @@ export class CustomersService {
       phone: customerData?.phone,
       regNumber: customerData?.regNumber,
       dateOfLastTehnoTest: customerData?.dateOfLastTehnoTest,
+      dateOfNextTehnoTest: customerData?.dateOfNextTehnoTest,
       createdAt: customerData?.createdAt,
+      isSmsSent: customerData?.isSmsSent,
       // daysRemaining: customerData?.daysRemaining,
       // status: customerData?.status,
     };
@@ -105,7 +106,6 @@ export class CustomersService {
     try {
       const updateData = JSON.parse(JSON.stringify(updateCustomerDto));
       const { status, daysRemaining, ...restOfUpdateDto } = updateData;
-      console.log(restOfUpdateDto?.dateOfLastTehnoTest);
       let formattedDateOfLastTehnoTest: Timestamp;
 
       if (
@@ -159,11 +159,9 @@ export class CustomersService {
       formattedCreatedAt = convertToTimestamp(updateCustomerDto.createdAt);
       await customerRef.update({
         ...restOfUpdateDto,
-        dateOfLastTehnoTest: formattedDateOfLastTehnoTest,
         createdAt: formattedCreatedAt,
+        dateOfLastTehnoTest: formattedDateOfLastTehnoTest,
         dateOfNextTehnoTest: nextTehnoTestTimestamp,
-        // status: newStatus,
-        // daysRemaining: newDaysRemaining, // Correct field name here
       });
 
       // Return the updated customer data

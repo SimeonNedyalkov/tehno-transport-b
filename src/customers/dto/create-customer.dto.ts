@@ -8,7 +8,7 @@ export class CreateCustomerDto {
   model: string;
   phone: number;
   regNumber: string;
-
+  isSmsSent: boolean;
   createdAt?: Timestamp;
 
   @IsDate()
