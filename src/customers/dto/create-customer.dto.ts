@@ -10,6 +10,7 @@ export class CreateCustomerDto {
   regNumber: string;
   isSmsSent: boolean;
   createdAt?: Timestamp;
+  isSentToApp: boolean;
 
   @IsDate()
   dateOfLastTehnoTest: Timestamp | Date;

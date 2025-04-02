@@ -66,6 +66,7 @@ export class CustomersService {
       dateOfNextTehnoTest: customerData?.dateOfNextTehnoTest,
       createdAt: customerData?.createdAt,
       isSmsSent: customerData?.isSmsSent,
+      isSentToApp: customerData?.isSentToApp,
       // daysRemaining: customerData?.daysRemaining,
       // status: customerData?.status,
     };

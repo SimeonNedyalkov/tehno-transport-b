@@ -10,9 +10,9 @@ export class UpdateCustomerDto extends PartialType(CreateCustomerDto) {
   model: string;
   phone: number;
   regNumber: string;
-
+  isSmsSent: boolean;
   createdAt: Timestamp;
-
+  isSentToApp: boolean;
   @IsDate()
   dateOfLastTehnoTest: Timestamp;
   // daysRemaining: number;
