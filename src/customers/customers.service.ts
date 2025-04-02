@@ -14,32 +14,32 @@ export class CustomersService {
   async create(createCustomerDto: CreateCustomerDto) {
     const createdAt = new Date();
 
-    let formattedDateOfTehnoTest: Timestamp;
+    let formattedDateOfLastTehnoTest: Timestamp;
 
     if (
-      createCustomerDto.dateOfTehnoTest &&
-      typeof createCustomerDto.dateOfTehnoTest === 'object' &&
-      'seconds' in createCustomerDto.dateOfTehnoTest
+      createCustomerDto.dateOfLastTehnoTest &&
+      typeof createCustomerDto.dateOfLastTehnoTest === 'object' &&
+      'seconds' in createCustomerDto.dateOfLastTehnoTest
     ) {
-      formattedDateOfTehnoTest = new Timestamp(
-        createCustomerDto.dateOfTehnoTest.seconds,
-        createCustomerDto.dateOfTehnoTest.nanoseconds,
+      formattedDateOfLastTehnoTest = new Timestamp(
+        createCustomerDto.dateOfLastTehnoTest.seconds,
+        createCustomerDto.dateOfLastTehnoTest.nanoseconds,
       );
-    } else if (createCustomerDto.dateOfTehnoTest instanceof Date) {
-      formattedDateOfTehnoTest = Timestamp.fromDate(
-        createCustomerDto.dateOfTehnoTest,
+    } else if (createCustomerDto.dateOfLastTehnoTest instanceof Date) {
+      formattedDateOfLastTehnoTest = Timestamp.fromDate(
+        createCustomerDto.dateOfLastTehnoTest,
       );
-    } else if (typeof createCustomerDto.dateOfTehnoTest === 'string') {
-      const newDate = new Date(createCustomerDto.dateOfTehnoTest);
-      formattedDateOfTehnoTest = Timestamp.fromDate(newDate);
+    } else if (typeof createCustomerDto.dateOfLastTehnoTest === 'string') {
+      const newDate = new Date(createCustomerDto.dateOfLastTehnoTest);
+      formattedDateOfLastTehnoTest = Timestamp.fromDate(newDate);
     } else {
-      throw new Error('Invalid dateOfTehnoTest format');
+      throw new Error('Invalid dateOfLastTehnoTest format');
     }
 
     const customerWithStatus = {
       ...createCustomerDto,
       createdAt,
-      dateOfTehnoTest: formattedDateOfTehnoTest,
+      dateOfLastTehnoTest: formattedDateOfLastTehnoTest,
     };
 
     // Add the customer to Firestore
@@ -58,7 +58,7 @@ export class CustomersService {
       model: customerData?.model,
       phone: customerData?.phone,
       regNumber: customerData?.regNumber,
-      dateOfTehnoTest: customerData?.dateOfTehnoTest,
+      dateOfLastTehnoTest: customerData?.dateOfLastTehnoTest,
       createdAt: customerData?.createdAt,
       // daysRemaining: customerData?.daysRemaining,
       // status: customerData?.status,
@@ -100,27 +100,27 @@ export class CustomersService {
     try {
       const updateData = JSON.parse(JSON.stringify(updateCustomerDto));
       const { status, daysRemaining, ...restOfUpdateDto } = updateData;
-      console.log(restOfUpdateDto?.dateOfTehnoTest);
-      let formattedDateOfTehnoTest: Timestamp;
+      console.log(restOfUpdateDto?.dateOfLastTehnoTest);
+      let formattedDateOfLastTehnoTest: Timestamp;
 
       if (
-        updateCustomerDto.dateOfTehnoTest &&
-        typeof updateCustomerDto.dateOfTehnoTest === 'object' &&
-        'seconds' in updateCustomerDto.dateOfTehnoTest
+        updateCustomerDto.dateOfLastTehnoTest &&
+        typeof updateCustomerDto.dateOfLastTehnoTest === 'object' &&
+        'seconds' in updateCustomerDto.dateOfLastTehnoTest
       ) {
-        formattedDateOfTehnoTest = new Timestamp(
-          updateCustomerDto.dateOfTehnoTest.seconds,
-          updateCustomerDto.dateOfTehnoTest.nanoseconds,
+        formattedDateOfLastTehnoTest = new Timestamp(
+          updateCustomerDto.dateOfLastTehnoTest.seconds,
+          updateCustomerDto.dateOfLastTehnoTest.nanoseconds,
         );
-      } else if (updateCustomerDto.dateOfTehnoTest instanceof Date) {
-        formattedDateOfTehnoTest = Timestamp.fromDate(
-          updateCustomerDto.dateOfTehnoTest,
+      } else if (updateCustomerDto.dateOfLastTehnoTest instanceof Date) {
+        formattedDateOfLastTehnoTest = Timestamp.fromDate(
+          updateCustomerDto.dateOfLastTehnoTest,
         );
-      } else if (typeof updateCustomerDto.dateOfTehnoTest === 'string') {
-        const newDate = new Date(updateCustomerDto.dateOfTehnoTest);
-        formattedDateOfTehnoTest = Timestamp.fromDate(newDate);
+      } else if (typeof updateCustomerDto.dateOfLastTehnoTest === 'string') {
+        const newDate = new Date(updateCustomerDto.dateOfLastTehnoTest);
+        formattedDateOfLastTehnoTest = Timestamp.fromDate(newDate);
       } else {
-        throw new Error('Invalid dateOfTehnoTest format');
+        throw new Error('Invalid dateOfLastTehnoTest format');
       }
       const convertToTimestamp = (input: any): Timestamp | null => {
         if (!input) return null;
@@ -148,7 +148,7 @@ export class CustomersService {
       formattedCreatedAt = convertToTimestamp(updateCustomerDto.createdAt);
       await customerRef.update({
         ...restOfUpdateDto,
-        dateOfTehnoTest: formattedDateOfTehnoTest,
+        dateOfLastTehnoTest: formattedDateOfLastTehnoTest,
         createdAt: formattedCreatedAt,
         // status: newStatus,
         // daysRemaining: newDaysRemaining, // Correct field name here

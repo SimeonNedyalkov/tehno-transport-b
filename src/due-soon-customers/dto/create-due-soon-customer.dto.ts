@@ -12,7 +12,10 @@ export class CreateDueSoonCustomerDto {
   createdAt?: Timestamp;
 
   @IsDate()
-  dateOfTehnoTest: Date | Timestamp | { seconds: number; nanoseconds: number };
+  dateOfLastTehnoTest:
+    | Date
+    | Timestamp
+    | { seconds: number; nanoseconds: number };
   // daysRemaining?: number;
   // status?: string;
 }
