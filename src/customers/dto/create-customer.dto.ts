@@ -12,10 +12,8 @@ export class CreateCustomerDto {
   createdAt?: Timestamp;
 
   @IsDate()
-  dateOfLastTehnoTest:
-    | Date
-    | Timestamp
-    | { seconds: number; nanoseconds: number };
-  // daysRemaining?: number;
-  // status?: string;
+  dateOfLastTehnoTest: Timestamp | Date;
+
+  @IsDate()
+  dateOfNextTehnoTest?: Timestamp | Date;
 }

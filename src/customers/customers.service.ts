@@ -25,10 +25,6 @@ export class CustomersService {
         createCustomerDto.dateOfLastTehnoTest.seconds,
         createCustomerDto.dateOfLastTehnoTest.nanoseconds,
       );
-    } else if (createCustomerDto.dateOfLastTehnoTest instanceof Date) {
-      formattedDateOfLastTehnoTest = Timestamp.fromDate(
-        createCustomerDto.dateOfLastTehnoTest,
-      );
     } else if (typeof createCustomerDto.dateOfLastTehnoTest === 'string') {
       const newDate = new Date(createCustomerDto.dateOfLastTehnoTest);
       formattedDateOfLastTehnoTest = Timestamp.fromDate(newDate);
@@ -36,10 +32,19 @@ export class CustomersService {
       throw new Error('Invalid dateOfLastTehnoTest format');
     }
 
+    const nextTehnoTestTimestamp = Timestamp.fromDate(
+      new Date(
+        formattedDateOfLastTehnoTest
+          .toDate()
+          .setFullYear(formattedDateOfLastTehnoTest.toDate().getFullYear() + 1),
+      ),
+    );
+    console.log(nextTehnoTestTimestamp);
     const customerWithStatus = {
       ...createCustomerDto,
       createdAt,
       dateOfLastTehnoTest: formattedDateOfLastTehnoTest,
+      dateOfNextTehnoTest: nextTehnoTestTimestamp,
     };
 
     // Add the customer to Firestore
@@ -112,10 +117,6 @@ export class CustomersService {
           updateCustomerDto.dateOfLastTehnoTest.seconds,
           updateCustomerDto.dateOfLastTehnoTest.nanoseconds,
         );
-      } else if (updateCustomerDto.dateOfLastTehnoTest instanceof Date) {
-        formattedDateOfLastTehnoTest = Timestamp.fromDate(
-          updateCustomerDto.dateOfLastTehnoTest,
-        );
       } else if (typeof updateCustomerDto.dateOfLastTehnoTest === 'string') {
         const newDate = new Date(updateCustomerDto.dateOfLastTehnoTest);
         formattedDateOfLastTehnoTest = Timestamp.fromDate(newDate);
@@ -144,12 +145,23 @@ export class CustomersService {
 
         return null; // Invalid format
       };
+      const nextTehnoTestTimestamp = Timestamp.fromDate(
+        new Date(
+          formattedDateOfLastTehnoTest
+            .toDate()
+            .setFullYear(
+              formattedDateOfLastTehnoTest.toDate().getFullYear() + 1,
+            ),
+        ),
+      );
+
       let formattedCreatedAt: Timestamp | null = null;
       formattedCreatedAt = convertToTimestamp(updateCustomerDto.createdAt);
       await customerRef.update({
         ...restOfUpdateDto,
         dateOfLastTehnoTest: formattedDateOfLastTehnoTest,
         createdAt: formattedCreatedAt,
+        dateOfNextTehnoTest: nextTehnoTestTimestamp,
         // status: newStatus,
         // daysRemaining: newDaysRemaining, // Correct field name here
       });
