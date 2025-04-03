@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { SmsLogsService } from './sms_logs.service';
 import { CreateSmsLogDto } from './dto/create-sms_log.dto';
 import { UpdateSmsLogDto } from './dto/update-sms_log.dto';
+import { FirebaseAuthGuard } from 'src/guards/firebase.guard';
 
 @Controller('sms-logs')
 export class SmsLogsController {
@@ -13,6 +23,7 @@ export class SmsLogsController {
   }
 
   @Get()
+  @UseGuards(FirebaseAuthGuard)
   findAll() {
     return this.smsLogsService.findAll();
   }
