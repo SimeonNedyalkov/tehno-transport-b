@@ -18,6 +18,7 @@ export class SmsLogsController {
   constructor(private readonly smsLogsService: SmsLogsService) {}
 
   @Post()
+  @UseGuards(FirebaseAuthGuard)
   create(@Body() createSmsLogDto: CreateSmsLogDto) {
     return this.smsLogsService.create(createSmsLogDto);
   }

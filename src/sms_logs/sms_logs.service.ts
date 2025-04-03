@@ -4,8 +4,17 @@ import { UpdateSmsLogDto } from './dto/update-sms_log.dto';
 import { db } from 'src/firebaseConfig/firebase';
 @Injectable()
 export class SmsLogsService {
-  create(createSmsLogDto: CreateSmsLogDto) {
-    return 'This action adds a new smsLog';
+  async create(createSmsLogDto: CreateSmsLogDto) {
+    const sentAt = new Date();
+
+    const smsWithSentAt = {
+      ...createSmsLogDto,
+      sentAt,
+    };
+    const smsRef = await db.collection('sms_logs').add(smsWithSentAt);
+    const newSms = await smsRef.get();
+    const smsData = newSms.data();
+    return smsData;
   }
 
   async findAll() {
