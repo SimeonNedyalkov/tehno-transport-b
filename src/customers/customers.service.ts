@@ -45,7 +45,21 @@ export class CustomersService {
       dateOfLastTehnoTest: formattedDateOfLastTehnoTest,
       dateOfNextTehnoTest: nextTehnoTestTimestamp,
     };
+    const querySnapshot = await db
+      .collection('customers')
+      .where('regNumber', '==', createCustomerDto.regNumber)
+      .get();
+    if (!querySnapshot.empty) {
+      throw new Error('Customer already exists!');
+    }
+    // const existsRef = db
+    //   .collection('customers')
+    //   .doc(createCustomerDto.regNumber);
+    // const exists = await existsRef.get();
 
+    // if (exists) {
+    //   throw new Error('Customer already exists!');
+    // }
     // Add the customer to Firestore
     const customerRef = await db
       .collection('customers')
@@ -93,7 +107,6 @@ export class CustomersService {
     return { id: customerDoc.id, ...customerDoc.data() };
   }
 
-  // Update a customer
   // Update a customer
   async update(id: string, updateCustomerDto: UpdateCustomerDto) {
     const customerRef = db.collection('customers').doc(id);
