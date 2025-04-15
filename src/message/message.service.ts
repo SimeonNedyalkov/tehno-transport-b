@@ -33,11 +33,29 @@ export class MessageService {
     return { id: customerDoc.id, ...customerDoc.data() };
   }
 
-  update(id: number, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
+  async update(id: string, updateMessageDto: UpdateMessageDto) {
+    console.log('Updating message with ID:', id);
+    console.log('Update data:', updateMessageDto);
+
+    const docRef = db.collection('message').doc(id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      throw new NotFoundException(`Message with ID ${id} not found`);
+    }
+
+    try {
+      await docRef.update(updateMessageDto);
+      const updatedDoc = await docRef.get();
+      console.log('Updated document:', updatedDoc.data()); // Log the updated doc
+      return { id: updatedDoc.id, ...updatedDoc.data() };
+    } catch (error) {
+      console.error('Error updating document:', error);
+      throw new Error('Failed to update message.');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} message`;
+  remove(id: string) {
+    return `This action removes message with ID ${id}`;
   }
 }
