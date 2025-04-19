@@ -215,7 +215,7 @@ export class UserService {
 
       7;
       if (file && file.filename) {
-        updates.photoURL = `http://localhost:3000/uploads/${file.filename}`;
+        updates.photoURL = `https://tehno-transport-b.onrender.com/uploads/${file.filename}`;
         7;
       }
 
