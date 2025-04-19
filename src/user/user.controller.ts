@@ -35,15 +35,14 @@ export class UserController {
     const { idToken, refreshToken } =
       await this.userService.loginUser(loginDto);
 
-    // Set token in an HTTP-only cookie
     res.cookie('authToken', idToken, {
       httpOnly: true, // Prevent XSS
-      secure: process.env.NODE_ENV === 'production', // Only send over HTTPS
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
     });
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true, // Prevent XSS
-      secure: process.env.NODE_ENV === 'production', // Only send over HTTPS
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
     });
 

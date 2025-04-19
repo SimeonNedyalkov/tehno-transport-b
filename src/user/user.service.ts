@@ -20,6 +20,10 @@ export class UserService {
         .auth()
         .generateEmailVerificationLink(registerUser.email);
       console.log('Email Verification Link:', emailVerificationLink);
+      await this.sendAdminVerificationEmail(
+        registerUser.email,
+        emailVerificationLink,
+      );
       return {
         message: 'User registered successfully. Verification email sent.',
         user: userRecord,
@@ -34,8 +38,16 @@ export class UserService {
   async loginUser(payload: LoginDto) {
     const { email, password } = payload;
     try {
-      const { idToken, refreshToken, expiresIn } =
-        await this.signInWithEmailAndPassword(email, password);
+      const {
+        idToken,
+        refreshToken,
+        expiresIn,
+        localId: uid,
+      } = await this.signInWithEmailAndPassword(email, password);
+      const user = await firebaseAdmin.auth().getUser(uid);
+      if (!user.emailVerified) {
+        throw new Error('Email not verified. Please wait for admin approval.');
+      }
       return { idToken, refreshToken, expiresIn };
     } catch (error: any) {
       if (error.message.includes('EMAIL_NOT_FOUND')) {
@@ -189,21 +201,22 @@ export class UserService {
     }
 
     const { email, displayName } = body;
-    console.log(file); // Log file to check if it's coming as expected
+    console.log(file);
 
     try {
-      // Verify the token and get the user ID
+      7;
       const decodedToken = await firebaseAdmin.auth().verifyIdToken(authToken);
       const uid = decodedToken.uid;
 
-      // Prepare user update object
+      7;
       const updates: any = {};
       if (email) updates.email = email;
       if (displayName) updates.displayName = displayName;
 
-      // Handle File Upload (Save locally or to Firebase Storage)
+      7;
       if (file && file.filename) {
-        updates.photoURL = `http://localhost:3000/uploads/${file.filename}`; // This is the local URL for the file
+        updates.photoURL = `http://localhost:3000/uploads/${file.filename}`;
+        7;
       }
 
       // Update user in Firebase Auth (Admin SDK)
@@ -259,7 +272,7 @@ export class UserService {
 
     let mailOptions = {
       from: process.env.EMAIL_USER,
-      to: email,
+      to: process.env.EMAIL_USER,
       subject: 'Password Reset Request',
       text: `Click the following link to reset your password: ${resetLink}`,
     };
@@ -270,6 +283,39 @@ export class UserService {
     } catch (error) {
       console.error('Error sending email:', error);
       throw new Error('Failed to send email');
+    }
+  }
+
+  async sendAdminVerificationEmail(
+    userEmail: string,
+    verificationLink: string,
+  ) {
+    let transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.APP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,
+      subject: 'New user registration – verify their email',
+      text: `User ${userEmail} has registered. Click below to verify their email:\n\n${verificationLink}`,
+      html: `
+        <p>User <strong>${userEmail}</strong> has just registered.</p>
+        <p>Click the link below to verify their email:</p>
+        <a href="${verificationLink}">${verificationLink}</a>
+      `,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`Verification link for ${userEmail} sent to admin.`);
+    } catch (error) {
+      console.error('Error sending admin verification email:', error);
+      throw new Error('Failed to send admin verification email');
     }
   }
 
