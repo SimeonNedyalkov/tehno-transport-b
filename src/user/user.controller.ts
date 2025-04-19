@@ -38,12 +38,16 @@ export class UserController {
     res.cookie('authToken', idToken, {
       httpOnly: true, // Prevent XSS
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
+      path: '/',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true, // Prevent XSS
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     return res.json({ message: 'Login successful', refreshToken, idToken });
@@ -60,12 +64,16 @@ export class UserController {
       res.cookie('authToken', result.idToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
+        path: '/',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
       });
       res.cookie('refreshToken', result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
       return res.json(result);
     } catch (error) {
@@ -90,13 +98,15 @@ export class UserController {
       res.clearCookie('authToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'none',
+        path: '/',
       });
 
       res.clearCookie('refreshToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'none',
+        path: '/',
       });
 
       return res.status(200).json({ message: 'Logged out successfully' });
