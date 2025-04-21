@@ -5,6 +5,8 @@ import { LoginDto } from './dto/login-user.dto';
 import axios from 'axios';
 import * as nodemailer from 'nodemailer';
 import * as cloudinary from 'cloudinary';
+import * as fs from 'fs';
+import * as path from 'path';
 interface CloudinaryUploadResult {
   secure_url: string;
   public_id: string;
@@ -65,15 +67,18 @@ export class UserService {
   }
   async uploadFile(file: Express.Multer.File): Promise<CloudinaryUploadResult> {
     return new Promise((resolve, reject) => {
-      cloudinary.v2.uploader
-        .upload_stream({ resource_type: 'auto' }, (error, result) => {
+      const filePath = path.resolve(file.path);
+      const uploadStream = cloudinary.v2.uploader.upload_stream(
+        { resource_type: 'auto' },
+        (error, result) => {
           if (error) {
             reject(error);
           } else {
             resolve(result as CloudinaryUploadResult);
           }
-        })
-        .end(file.buffer);
+        },
+      );
+      fs.createReadStream(filePath).pipe(uploadStream);
     });
   }
   private async signInWithEmailAndPassword(email: string, password: string) {
