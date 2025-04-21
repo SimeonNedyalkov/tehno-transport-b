@@ -19,7 +19,11 @@ async function bootstrap() {
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
   app.enableCors({
-    origin: ['https://tehno-transport.vercel.app', 'http://localhost:8081'],
+    origin: [
+      'https://tehno-transport.vercel.app',
+      '192.168.1.6.5173',
+      'http://localhost:8081',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
