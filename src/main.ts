@@ -21,7 +21,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://tehno-transport.vercel.app',
-      '192.168.1.6.5173',
+      'http://192.168.1.6:5173',
       'http://localhost:8081',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
