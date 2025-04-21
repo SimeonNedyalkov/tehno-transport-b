@@ -24,6 +24,7 @@ async function bootstrap() {
       'https://tehno-transport.vercel.app',
       'http://192.168.1.6:5173',
       'http://localhost:8081',
+      'http://localhost:5173',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
