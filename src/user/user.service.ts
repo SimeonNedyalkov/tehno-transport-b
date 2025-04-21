@@ -4,7 +4,11 @@ import * as firebaseAdmin from 'firebase-admin';
 import { LoginDto } from './dto/login-user.dto';
 import axios from 'axios';
 import * as nodemailer from 'nodemailer';
-
+import * as cloudinary from 'cloudinary';
+interface CloudinaryUploadResult {
+  secure_url: string;
+  public_id: string;
+}
 @Injectable()
 export class UserService {
   validateToken(authHeader: string) {
@@ -58,6 +62,19 @@ export class UserService {
         throw new Error(error.message);
       }
     }
+  }
+  async uploadFile(file: Express.Multer.File): Promise<CloudinaryUploadResult> {
+    return new Promise((resolve, reject) => {
+      cloudinary.v2.uploader
+        .upload_stream({ resource_type: 'auto' }, (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result as CloudinaryUploadResult);
+          }
+        })
+        .end(file.buffer);
+    });
   }
   private async signInWithEmailAndPassword(email: string, password: string) {
     const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.APIKEY}`;
@@ -145,7 +162,6 @@ export class UserService {
     try {
       const refreshTokenUrl = `https://securetoken.googleapis.com/v1/token?key=${process.env.APIKEY}`;
 
-      // Exchange refresh token for user info
       const response = await axios.post(refreshTokenUrl, {
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
@@ -153,7 +169,6 @@ export class UserService {
 
       const uid = response.data.user_id;
 
-      // Revoke the refresh tokens for this UID
       await firebaseAdmin.auth().revokeRefreshTokens(uid);
 
       console.log(`Refresh token revoked for UID: ${uid}`);
@@ -175,13 +190,10 @@ export class UserService {
     }
 
     try {
-      // Verify the ID token using Firebase Admin SDK
       const decodedToken = await firebaseAdmin.auth().verifyIdToken(authToken);
 
-      // Fetch the user from Firebase using the UID from the decoded token
       const user = await firebaseAdmin.auth().getUser(decodedToken.uid);
 
-      // Return the user details
       return {
         uid: user.uid,
         displayName: user.displayName,
@@ -204,22 +216,18 @@ export class UserService {
     console.log(file);
 
     try {
-      7;
       const decodedToken = await firebaseAdmin.auth().verifyIdToken(authToken);
       const uid = decodedToken.uid;
 
-      7;
       const updates: any = {};
       if (email) updates.email = email;
       if (displayName) updates.displayName = displayName;
 
-      7;
       if (file && file.filename) {
-        updates.photoURL = `https://tehno-transport-b.onrender.com/uploads/${file.filename}`;
-        7;
+        const uploadResult = await this.uploadFile(file);
+        updates.photoURL = uploadResult.secure_url;
       }
 
-      // Update user in Firebase Auth (Admin SDK)
       await firebaseAdmin.auth().updateUser(uid, updates);
 
       return { message: 'Profile updated successfully', updates };
